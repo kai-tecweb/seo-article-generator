@@ -1,0 +1,30 @@
+# 依存関係
+node_modules/
+.next/
+.out/
+dist/
+build/
+
+# ビルド成果物
+*.min.js
+*.min.css
+
+# 設定ファイル
+.env*
+.gitignore
+
+# ログファイル
+*.log
+
+# パッケージマネージャー
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# IDE設定
+.vscode/
+.idea/
+
+# OS固有
+.DS_Store
+Thumbs.db

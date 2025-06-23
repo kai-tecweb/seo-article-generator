@@ -6,7 +6,15 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "echo \"テストを追加してください\" && exit 0",
+    "test:watch": "echo \"テストウォッチモードを設定してください\" && exit 0",
+    "analyze": "cross-env ANALYZE=true next build",
+    "clean": "rm -rf .next out dist",
+    "prepare": "husky install || echo 'Huskyが設定されていません'"
   },
   "dependencies": {
     "@ai-sdk/openai": "latest",
@@ -76,6 +84,14 @@
     "@types/react-dom": "^19",
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5"
+    "typescript": "^5",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^15.0.0",
+    "prettier": "^3.0.0",
+    "cross-env": "^7.0.3",
+    "husky": "^9.0.0",
+    "jscpd": "^4.0.0"
   }
 }

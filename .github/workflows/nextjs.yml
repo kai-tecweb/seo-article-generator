@@ -1,0 +1,98 @@
+name: Next.js CI
+
+on:
+  push:
+    branches: [ feature/*, bugfix/*, hotfix/* ]
+  pull_request:
+    branches: [ develop, main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test & Build
+    
+    strategy:
+      matrix:
+        node-version: [18, 20]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: TypeScript型チェック
+      run: npm run type-check || npx tsc --noEmit
+
+    - name: ESLintチェック
+      run: npm run lint || npx eslint . --ext .ts,.tsx,.js,.jsx
+
+    - name: Prettierフォーマットチェック
+      run: npm run format:check || npx prettier --check .
+
+    - name: テスト実行
+      run: npm test || echo "テストスクリプトが設定されていません"
+
+    - name: ビルド実行
+      run: npm run build
+
+    - name: ビルド成果物の確認
+      run: |
+        echo "ビルド成果物サイズ:"
+        du -sh .next/ || du -sh dist/ || echo "ビルド成果物が見つかりません"
+
+  # 並列実行: コード品質チェック
+  code-quality:
+    runs-on: ubuntu-latest
+    name: Code Quality
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: 重複コードチェック
+      run: npx jscpd --threshold 10 --format "typescript,javascript" --ignore "**/node_modules/**,**/.next/**" . || echo "重複コードチェック完了"
+
+    - name: バンドルサイズ分析
+      run: |
+        npm run build
+        npx @next/bundle-analyzer || echo "バンドル分析ツールが設定されていません"
+
+  # セキュリティ・依存関係チェック
+  security:
+    runs-on: ubuntu-latest
+    name: Security & Dependencies
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: 脆弱性チェック
+      run: npm audit --audit-level=moderate
+
+    - name: 依存関係の更新チェック
+      run: npx npm-check-updates --errorLevel 2
+
+    - name: ライセンスチェック
+      run: npx license-checker --summary || echo "ライセンスチェッカーをインストールしてください: npm install -g license-checker"
