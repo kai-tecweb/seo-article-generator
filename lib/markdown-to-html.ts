@@ -3,7 +3,7 @@ import remarkParse from "remark-parse"
 import remarkRehype from "remark-rehype"
 import rehypeRaw from "rehype-raw"
 import rehypeStringify from "rehype-stringify"
-import { visit } from "unist-util-visit"
+import { visit, SKIP } from "unist-util-visit"
 import { h } from "hastscript"
 
 // Google AdSense広告を挿入するrehypeプラグイン
@@ -48,8 +48,10 @@ function rehypeAdsensePlugin(options: { clientId: string; slotId: string }) {
             h("script", "(adsbygoogle = window.adsbygoogle || []).push({});"),
           ])
           // H2の直後に広告ノードを挿入
-          parent.children.splice(index + 1, 0, adNode)
-          return [visit.SKIP, index + 1] // 新しいノードをスキップして、次の要素から再開
+          if (typeof index !== 'undefined' && parent.children) {
+            parent.children.splice(index + 1, 0, adNode)
+            return [SKIP, index + 1] // 新しいノードをスキップして、次の要素から再開
+          }
         }
       }
     })
@@ -105,9 +107,9 @@ function rehypeAffiliatePlugin(options: {
       visit(tree, "element", (node, index, parent) => {
         if (node.tagName === "h2") {
           h2Count++
-          if (h2Count % options.h2Interval === 0 && parent && index !== null) {
+          if (h2Count % options.h2Interval === 0 && parent && typeof index !== 'undefined' && parent.children) {
             parent.children.splice(index + 1, 0, affiliateNode)
-            return [visit.SKIP, index + 1] // 新しく挿入されたノードをスキップして、次の要素から再開
+            return [SKIP, index + 1] // 新しく挿入されたノードをスキップして、次の要素から再開
           }
         }
       })

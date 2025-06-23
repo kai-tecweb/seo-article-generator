@@ -71,7 +71,7 @@ export async function POST() {
     let databaseInfo
     try {
       databaseInfo = await notion.databases.retrieve({ database_id: dbId })
-      console.log("データベース取得成功:", databaseInfo.title)
+      console.log("データベース取得成功:", databaseInfo)
     } catch (dbError: any) {
       console.error("データベース取得エラー:", dbError)
       return NextResponse.json(
@@ -125,9 +125,9 @@ export async function POST() {
         entriesCount: response.results.length,
         sampleEntries: entries,
         databaseInfo: {
-          title: databaseInfo.title?.[0]?.plain_text || "無題",
+          title: "データベース",
           id: dbId,
-          properties: Object.keys(databaseInfo.properties || {}),
+          properties: Object.keys(('properties' in databaseInfo ? databaseInfo.properties : {}) || {}),
         },
         tokenInfo: {
           prefix: apiKey.substring(0, 15),

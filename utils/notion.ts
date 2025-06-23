@@ -51,7 +51,7 @@ export async function fetchNotionHistory() {
     // まずデータベース情報を取得してアクセス権限を確認
     try {
       const databaseInfo = await notion.databases.retrieve({ database_id: databaseId })
-      console.log("Database retrieved successfully:", databaseInfo.title)
+      console.log("Database retrieved successfully:", databaseInfo)
     } catch (dbError: any) {
       console.error("Database retrieval error:", dbError)
       if (dbError.code === "object_not_found") {

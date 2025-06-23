@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     const defaultKeyword = "SEO" // デフォルトのキーワード
     const words = articleContent.split(/\s+/) // スペースで単語に分割
     const totalWords = words.length
-    const keywordOccurrences = words.filter((word) => word.toLowerCase().includes(defaultKeyword.toLowerCase())).length
+    const keywordOccurrences = words.filter((word: string) => word.toLowerCase().includes(defaultKeyword.toLowerCase())).length
     const keywordDensity = totalWords > 0 ? ((keywordOccurrences / totalWords) * 100).toFixed(2) + "%" : "0.00%"
 
     // 3. メタディスクリプション有無 (hasMetaDescription)
