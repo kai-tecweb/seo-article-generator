@@ -6,11 +6,14 @@
 ## プロジェクト概要
 
 ### 主要機能
-- **記事生成**: AI（OpenAI）を使用した高品質SEO記事の自動生成
-- **SEOチェック**: 記事のSEO最適化状況の分析
-- **コンテンツ管理**: Notionとの連携による記事管理
-- **多プラットフォーム投稿**: WordPress、X（Twitter）、Google Business Profileへの自動投稿
-- **画像生成**: AI技術を活用したアイキャッチ画像の自動生成
+- **AI記事生成**: OpenAI GPT-4による高品質SEO記事の自動生成
+- **品質評価**: Google品質ガイドライン準拠の8項目自動評価
+- **画像生成**: Fal AIによるアイキャッチ画像の自動生成
+- **トレンド分析**: Yahoo!急上昇ワード・Googleトレンド解析
+- **多プラットフォーム投稿**: WordPress、X、Google Business Profileへの自動投稿
+- **SEO最適化**: メタタグ・構造化データの自動生成
+- **広告管理**: Google AdSense最適配置システム
+- **HTML解析**: 既存コンテンツの改善提案機能
 - **記事要約**: 長文記事の自動要約機能
 
 ### アーキテクチャ構造
@@ -18,18 +21,61 @@
 - **フロントエンド**: React + TypeScript
 - **接続層**: Inertia.js（SPA体験とサーバーサイドレンダリングの融合）
 - **スタイリング**: Tailwind CSS + shadcn/ui
-- **AI統合**: OpenAI API、Fal AI（画像生成）
+- **状態管理**: React Server Components + Client State
+- **フォーム**: React Hook Form + Zod
+- **テスト**: PHPUnit + Jest + React Testing Library
+- **AI統合**: OpenAI API、Fal AI
 - **外部連携**: Notion API、WordPress API、X API、Google Business Profile API
+
+### プロジェクト構造（Laravel 12）
+```
+app/
+├── Http/
+│   ├── Controllers/        # API・Webコントローラー
+│   ├── Middleware/         # ミドルウェア
+│   └── Requests/          # フォームリクエスト
+├── Models/                # Eloquentモデル
+├── Services/              # ビジネスロジック
+├── Policies/              # 認可ポリシー
+└── Console/               # Artisanコマンド
+
+resources/
+├── js/
+│   ├── Pages/            # Inertia.jsページコンポーネント
+│   ├── Components/       # 再利用可能なReactコンポーネント
+│   ├── Layouts/          # レイアウトコンポーネント
+│   └── Types/            # TypeScript型定義
+├── views/                # Bladeテンプレート
+└── css/                  # スタイルシート
+
+database/
+├── migrations/           # データベースマイグレーション
+├── seeders/             # シーダー
+└── factories/           # モデルファクトリー
+
+routes/
+├── web.php              # Webルート
+├── api.php              # APIルート
+└── console.php          # Artisanコマンドルート
+
+tests/
+├── Feature/             # 機能テスト
+├── Unit/                # ユニットテスト
+└── Browser/             # Duskブラウザテスト
+```
 
 ### 主要エンティティ
 - **User**: システム利用者
 - **Article**: 生成された記事
 - **ArticleTemplate**: 記事テンプレート
 - **SEOAnalysis**: SEO分析結果
+- **QualityEvaluation**: 品質評価結果
+- **AdManagement**: 広告管理設定
 - **PublishHistory**: 投稿履歴
 - **NotionIntegration**: Notion連携設定
 - **WordPressIntegration**: WordPress連携設定
 - **SocialMediaIntegration**: SNS連携設定
+- **GoogleTrendsData**: Googleトレンドデータ
 
 ## 環境構築
 
@@ -108,10 +154,27 @@ FAL_AI_API_KEY=your_fal_ai_api_key
 
 # 外部サービス設定
 NOTION_API_KEY=your_notion_api_key
-WORDPRESS_API_URL=your_wordpress_site_url
-WORDPRESS_API_KEY=your_wordpress_api_key
-TWITTER_API_KEY=your_twitter_api_key
-GOOGLE_BUSINESS_API_KEY=your_google_business_api_key
+NOTION_DATABASE_ID=your_notion_database_id
+WORDPRESS_SITE_URL=your_wordpress_site_url
+WORDPRESS_USERNAME=your_wordpress_username
+WORDPRESS_APP_PASSWORD=your_wordpress_app_password
+X_API_BEARER_TOKEN=your_x_api_bearer_token
+GOOGLE_BUSINESS_PROFILE_API_KEY=your_gbp_api_key
+
+# セッション・キャッシュ設定
+SESSION_DRIVER=file
+CACHE_DRIVER=file
+QUEUE_CONNECTION=sync
+
+# メール設定
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
 ```
 
 #### 5. Inertia.jsの設定
