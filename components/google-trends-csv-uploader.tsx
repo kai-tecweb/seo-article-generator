@@ -13,11 +13,11 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Upload, 
-  FileText, 
-  TrendingUp, 
-  TrendingDown, 
+import {
+  Upload,
+  FileText,
+  TrendingUp,
+  TrendingDown,
   Minus,
   AlertCircle,
   CheckCircle,
@@ -25,10 +25,10 @@ import {
   Calendar,
   Target
 } from 'lucide-react';
-import type { 
-  GoogleTrendsCsvFormState, 
-  GoogleTrendAnalysisResult, 
-  GoogleTrendsCsvUploaderProps 
+import type {
+  GoogleTrendsCsvFormState,
+  GoogleTrendAnalysisResult,
+  GoogleTrendsCsvUploaderProps
 } from '@/types/google-trends';
 import { formatDateRange, formatTrendDirection } from '@/utils/google-trends-csv';
 
@@ -151,7 +151,7 @@ export function GoogleTrendsCsvUploader({
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '不明なエラーが発生しました';
-      
+
       setFormState(prev => ({
         ...prev,
         error: errorMessage,
@@ -270,12 +270,12 @@ export function GoogleTrendsCsvUploader({
 
           {/* アクションボタン */}
           <div className="flex gap-2">
-            <Button 
+            <Button
               onClick={handleUpload}
               disabled={
-                disabled || 
-                formState.isLoading || 
-                !formState.file || 
+                disabled ||
+                formState.isLoading ||
+                !formState.file ||
                 !formState.keyword.trim()
               }
               className="flex-1"
@@ -283,8 +283,8 @@ export function GoogleTrendsCsvUploader({
               {formState.isLoading ? '処理中...' : 'アップロード'}
             </Button>
             {formState.analysisResult && (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={handleReset}
                 disabled={disabled || formState.isLoading}
               >
@@ -369,8 +369,8 @@ function TrendAnalysisResults({ analysisResult }: { analysisResult: GoogleTrendA
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">コンテンツ作成推奨度</span>
-              <Badge variant={seoRecommendations.contentCreationScore >= 8 ? 'default' : 
-                             seoRecommendations.contentCreationScore >= 6 ? 'secondary' : 'outline'}>
+              <Badge variant={seoRecommendations.contentCreationScore >= 8 ? 'default' :
+                seoRecommendations.contentCreationScore >= 6 ? 'secondary' : 'outline'}>
                 {seoRecommendations.contentCreationScore}/10
               </Badge>
             </div>

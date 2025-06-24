@@ -39,13 +39,13 @@ export async function parseGoogleTrendsCsv(
 
     // データを解析
     const trendData: GoogleTrendItem[] = [];
-    
+
     for (let i = 0; i < limitedLines.length; i++) {
       const line = limitedLines[i].trim();
       if (!line) continue;
 
       const columns = line.split(delimiter).map(col => col.trim());
-      
+
       // 必要な列数をチェック
       if (columns.length < 3) {
         console.warn(`行 ${i + 1}: 列数が不足しています (${columns.length}/3)`);
@@ -132,11 +132,11 @@ export function validateGoogleTrendsCsv(csvContent: string): CsvValidationResult
     if (lines.length > 0) {
       const headerLine = lines[0];
       result.headers = headerLine.split(',').map(h => h.trim().replace(/"/g, ''));
-      
+
       // 必要な列があるかチェック
       const requiredColumns = ['Week', 'gTrends', 'isPartial'];
-      const missingColumns = requiredColumns.filter(col => 
-        !result.headers.some(header => 
+      const missingColumns = requiredColumns.filter(col =>
+        !result.headers.some(header =>
           header.toLowerCase().includes(col.toLowerCase())
         )
       );
@@ -158,7 +158,7 @@ export function validateGoogleTrendsCsv(csvContent: string): CsvValidationResult
       if (!line) continue;
 
       const columns = line.split(',').map(col => col.trim().replace(/"/g, ''));
-      
+
       // 列数チェック
       if (columns.length < 3) {
         result.errors.push({
@@ -242,7 +242,7 @@ function calculateStatistics(data: GoogleTrendItem[]) {
   const maxScore = Math.max(...scores);
   const minScore = Math.min(...scores);
   const averageScore = scores.reduce((sum, score) => sum + score, 0) / scores.length;
-  
+
   // 標準偏差を計算
   const variance = scores.reduce((sum, score) => sum + Math.pow(score - averageScore, 2), 0) / scores.length;
   const standardDeviation = Math.sqrt(variance);
@@ -252,7 +252,7 @@ function calculateStatistics(data: GoogleTrendItem[]) {
   const secondHalf = scores.slice(Math.floor(scores.length / 2));
   const firstAvg = firstHalf.reduce((sum, score) => sum + score, 0) / firstHalf.length;
   const secondAvg = secondHalf.reduce((sum, score) => sum + score, 0) / secondHalf.length;
-  
+
   let trendDirection: 'up' | 'down' | 'stable';
   const difference = secondAvg - firstAvg;
   if (Math.abs(difference) < averageScore * 0.1) {
@@ -367,7 +367,7 @@ function isValidDate(dateString: string): boolean {
 export function readCsvFile(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    
+
     reader.onload = (event) => {
       const result = event.target?.result;
       if (typeof result === 'string') {
@@ -376,11 +376,11 @@ export function readCsvFile(file: File): Promise<string> {
         reject(new Error('ファイルの読み込みに失敗しました'));
       }
     };
-    
+
     reader.onerror = () => {
       reject(new Error('ファイルの読み込み中にエラーが発生しました'));
     };
-    
+
     reader.readAsText(file, 'UTF-8');
   });
 }
@@ -394,19 +394,19 @@ export function readCsvFile(file: File): Promise<string> {
 export function formatDateRange(startDate: string, endDate: string): string {
   const start = new Date(startDate);
   const end = new Date(endDate);
-  
+
   const startFormatted = start.toLocaleDateString('ja-JP', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
   });
-  
+
   const endFormatted = end.toLocaleDateString('ja-JP', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
   });
-  
+
   return `${startFormatted} 〜 ${endFormatted}`;
 }
 

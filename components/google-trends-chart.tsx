@@ -12,12 +12,12 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Calendar, TrendingUp, AlertTriangle } from 'lucide-react';
 import type { TrendChartProps, GoogleTrendItem } from '@/types/google-trends';
 
-export function TrendChart({ 
-  data, 
-  keyword, 
-  height = 300, 
+export function TrendChart({
+  data,
+  keyword,
+  height = 300,
   className = '',
-  showDateRange = true 
+  showDateRange = true
 }: TrendChartProps) {
   // チャート用データの準備
   const chartData = useMemo(() => {
@@ -36,10 +36,10 @@ export function TrendChart({
     const maxScore = Math.max(...scores);
     const minScore = Math.min(...scores);
     const averageScore = scores.reduce((sum, score) => sum + score, 0) / scores.length;
-    
+
     // 部分データの数
     const partialDataCount = data.filter(item => item.isPartial).length;
-    
+
     return {
       maxScore,
       minScore,
@@ -112,7 +112,7 @@ export function TrendChart({
             {formatDateForDisplay(dateRange.start)} 〜 {formatDateForDisplay(dateRange.end)}
           </CardDescription>
         )}
-        
+
         {/* 統計情報バッジ */}
         <div className="flex flex-wrap gap-2 mt-2">
           <Badge variant="outline">
@@ -139,17 +139,17 @@ export function TrendChart({
             <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <defs>
                 <linearGradient id="colorTrend" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis 
-                dataKey="displayDate" 
+              <XAxis
+                dataKey="displayDate"
                 tick={{ fontSize: 12 }}
                 interval="preserveStartEnd"
               />
-              <YAxis 
+              <YAxis
                 domain={[0, 100]}
                 tick={{ fontSize: 12 }}
                 label={{ value: 'トレンドスコア', angle: -90, position: 'insideLeft' }}
@@ -208,9 +208,9 @@ export function TrendChart({
  */
 function formatDateForChart(dateString: string): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString('ja-JP', { 
-    month: 'short', 
-    day: 'numeric' 
+  return date.toLocaleDateString('ja-JP', {
+    month: 'short',
+    day: 'numeric'
   });
 }
 
@@ -241,10 +241,10 @@ function formatDateForDisplay(dateString: string): string {
 /**
  * 簡易版トレンドチャート（ダッシュボード用）
  */
-export function MiniTrendChart({ 
-  data, 
-  height = 150, 
-  className = '' 
+export function MiniTrendChart({
+  data,
+  height = 150,
+  className = ''
 }: Pick<TrendChartProps, 'data' | 'height' | 'className'>) {
   const chartData = useMemo(() => {
     return data
@@ -269,8 +269,8 @@ export function MiniTrendChart({
         <AreaChart data={chartData}>
           <defs>
             <linearGradient id="miniColorTrend" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
             </linearGradient>
           </defs>
           <Area

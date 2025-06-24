@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     // CSVをバリデーション
     console.log('🔍 CSV バリデーション開始');
     const validationResult = validateGoogleTrendsCsv(csvContent);
-    
+
     if (!validationResult.isValid) {
       console.error('❌ CSV バリデーションエラー:', validationResult.errors);
       return NextResponse.json<GoogleTrendsCsvUploadResponse>({
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
     // CSVを解析
     console.log('🔄 CSV 解析開始');
     const analysisResult = await parseGoogleTrendsCsv(csvContent, keyword.trim());
-    
+
     console.log('✅ CSV 解析完了:', {
       keyword: analysisResult.keyword,
       dataPoints: analysisResult.trendData.length,
@@ -128,9 +128,9 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('💥 GoogleトレンドCSV取り込みエラー:', error);
-    
+
     const errorMessage = error instanceof Error ? error.message : '不明なエラーが発生しました';
-    
+
     return NextResponse.json<GoogleTrendsCsvUploadResponse>({
       success: false,
       error: `CSV取り込み処理中にエラーが発生しました: ${errorMessage}`,

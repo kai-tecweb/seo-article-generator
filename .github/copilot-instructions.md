@@ -1,7 +1,7 @@
 ````instructions
-# SEO記事生成システム開発指針
+# SEO記事生成システム開発指針 2025年版
 
-このプロジェクトは、AI技術を活用したSEO記事の自動生成・投稿システムです。Laravel 12、React、Inertia.js、Tailwind CSSを使用しています。
+このプロジェクトは、AI技術を活用したSEO記事の自動生成・投稿システムです。Laravel 12、React、Inertia.js、Tailwind CSSを使用したモダンなフルスタックアプリケーションです。
 
 ## プロジェクト概要
 
