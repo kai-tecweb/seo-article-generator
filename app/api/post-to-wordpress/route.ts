@@ -8,9 +8,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "タイトルとコンテンツが提供されていません。" }, { status: 400 })
     }
 
-    const wordpressUrl = process.env.WORDPRESS_URL
+    const wordpressUrl = process.env.WORDPRESS_API_URL
     const wordpressUsername = process.env.WORDPRESS_USERNAME
-    const wordpressApplicationPassword = process.env.WORDPRESS_APPLICATION_PASSWORD
+    const wordpressApplicationPassword = process.env.WORDPRESS_APP_PASSWORD
 
     if (!wordpressUrl || !wordpressUsername || !wordpressApplicationPassword) {
       console.error("WordPressの環境変数が設定されていません。")

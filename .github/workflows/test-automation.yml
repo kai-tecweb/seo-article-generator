@@ -1,0 +1,167 @@
+name: テスト自動化 CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # ユニットテスト・APIテスト
+  unit-tests:
+    runs-on: ubuntu-latest
+    name: 📋 ユニットテスト & API テスト
+    
+    steps:
+    - name: 📥 リポジトリをチェックアウト
+      uses: actions/checkout@v4
+
+    - name: 🟢 Node.js ${{ env.NODE_VERSION }} をセットアップ
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: 📦 依存関係をインストール
+      run: npm ci --legacy-peer-deps
+
+    - name: 🏗️ Next.js プロジェクトをビルド
+      run: npm run build
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'test-key' }}
+        FAL_AI_API_KEY: ${{ secrets.FAL_AI_API_KEY || 'test-key' }}
+        NOTION_API_KEY: ${{ secrets.NOTION_API_KEY || 'test-key' }}
+
+    - name: 🧪 Jestユニットテストを実行
+      run: npm run test -- --coverage --passWithNoTests
+      env:
+        OPENAI_API_KEY: 'test-key'
+        FAL_AI_API_KEY: 'test-key'
+        NOTION_API_KEY: 'test-key'
+
+    - name: 📊 カバレッジレポートを送信
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+
+  # E2Eテスト
+  e2e-tests:
+    runs-on: ubuntu-latest
+    name: 🎭 E2E テスト (Playwright)
+    needs: unit-tests
+    
+    steps:
+    - name: 📥 リポジトリをチェックアウト
+      uses: actions/checkout@v4
+
+    - name: 🟢 Node.js ${{ env.NODE_VERSION }} をセットアップ
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: 📦 依存関係をインストール
+      run: npm ci --legacy-peer-deps
+
+    - name: 🎭 Playwright ブラウザをインストール
+      run: npx playwright install --with-deps
+
+    - name: 🏗️ Next.js アプリケーションをビルド
+      run: npm run build
+      env:
+        OPENAI_API_KEY: 'test-key'
+        FAL_AI_API_KEY: 'test-key'
+        NOTION_API_KEY: 'test-key'
+
+    - name: 🎮 Playwright E2E テストを実行
+      run: npm run test:e2e
+      env:
+        OPENAI_API_KEY: 'test-key'
+        FAL_AI_API_KEY: 'test-key'
+        NOTION_API_KEY: 'test-key'
+
+    - name: 📸 Playwright レポートをアップロード
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30
+
+  # セキュリティ & 品質チェック
+  code-quality:
+    runs-on: ubuntu-latest
+    name: 🔍 コード品質 & セキュリティチェック
+    
+    steps:
+    - name: 📥 リポジトリをチェックアウト
+      uses: actions/checkout@v4
+
+    - name: 🟢 Node.js ${{ env.NODE_VERSION }} をセットアップ
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: 📦 依存関係をインストール
+      run: npm ci --legacy-peer-deps
+
+    - name: 🔍 ESLint でコード品質をチェック
+      run: npm run lint
+
+    - name: 💅 Prettier でコードフォーマットをチェック
+      run: npm run format:check
+
+    - name: 🔒 npm audit でセキュリティ脆弱性をチェック
+      run: npm audit --audit-level=moderate
+      continue-on-error: true
+
+    - name: 📝 TypeScript 型チェック
+      run: npm run type-check
+
+  # 統合テスト（全てのテストが成功した場合に実行）
+  integration-tests:
+    runs-on: ubuntu-latest
+    name: 🔗 統合テスト & デプロイ準備
+    needs: [unit-tests, e2e-tests, code-quality]
+    if: success()
+    
+    steps:
+    - name: 📥 リポジトリをチェックアウト
+      uses: actions/checkout@v4
+
+    - name: 🟢 Node.js ${{ env.NODE_VERSION }} をセットアップ
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: 📦 依存関係をインストール
+      run: npm ci --legacy-peer-deps
+
+    - name: 🧪 全テストスイートを実行
+      run: npm run test:all
+      env:
+        OPENAI_API_KEY: 'test-key'
+        FAL_AI_API_KEY: 'test-key'
+        NOTION_API_KEY: 'test-key'
+
+    - name: 🏗️ 本番用ビルドテスト
+      run: npm run build
+      env:
+        OPENAI_API_KEY: 'test-key'
+        FAL_AI_API_KEY: 'test-key'
+        NOTION_API_KEY: 'test-key'
+
+    - name: ✅ デプロイ準備完了通知
+      if: success()
+      run: echo "🚀 全てのテストが成功しました！デプロイ準備完了です。"
+
+    - name: ❌ テスト失敗通知
+      if: failure()
+      run: echo "❌ テストに失敗しました。詳細を確認してください。"

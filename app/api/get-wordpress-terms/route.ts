@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
   try {
-    const wordpressUrl = process.env.WORDPRESS_URL
+    const wordpressUrl = process.env.WORDPRESS_API_URL
     const wordpressUsername = process.env.WORDPRESS_USERNAME
     const wordpressApplicationPassword = process.env.WORDPRESS_APPLICATION_PASSWORD
 

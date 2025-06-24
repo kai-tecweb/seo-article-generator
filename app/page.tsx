@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { markdownToHtml } from "@/lib/markdown-to-html"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import YahooTrendingSelector from "@/components/yahoo-trending-selector"
 
 // 投稿履歴の型定義
 type PostHistoryEntry = {
@@ -43,6 +44,23 @@ type NotionTestResult = {
       title: string
       id: string
       properties: string[]
+    }
+  }
+  details?: any
+  guidance?: string
+}
+
+interface OpenAITestResponse {
+  success: boolean
+  message?: string
+  error?: string
+  data?: {
+    testResponse: string
+    model: string
+    apiKeyValid: boolean
+    keyInfo: {
+      prefix: string
+      length: number
     }
   }
   details?: any
@@ -123,6 +141,10 @@ export default function ArticleGeneratorPage() {
   // Notion接続テスト用のステート
   const [isTestingNotion, setIsTestingNotion] = useState(false)
   const [notionTestResult, setNotionTestResult] = useState<NotionTestResult | null>(null)
+
+  // OpenAI接続テスト用のステート
+  const [isTestingOpenAI, setIsTestingOpenAI] = useState(false)
+  const [openaiTestResult, setOpenaiTestResult] = useState<OpenAITestResponse | null>(null)
 
   // スケジューラー用のステート
   const [scheduledTime, setScheduledTime] = useState("10:30")
@@ -225,6 +247,36 @@ export default function ArticleGeneratorPage() {
       })
     } finally {
       setIsTestingNotion(false)
+    }
+  }
+
+  // OpenAI接続テスト関数
+  const handleTestOpenAIConnection = async () => {
+    setIsTestingOpenAI(true)
+    setOpenaiTestResult(null)
+
+    try {
+      console.log("OpenAI接続テストを開始...")
+      const response = await fetch("/api/test-openai-connection", { method: "POST" })
+      const result: OpenAITestResponse = await response.json()
+
+      console.log("OpenAIテスト結果:", result)
+      setOpenaiTestResult(result)
+
+      if (result.success) {
+        console.log("✅ OpenAI接続テスト成功")
+      } else {
+        console.log("❌ OpenAI接続テスト失敗:", result.error)
+      }
+    } catch (err: any) {
+      console.error("OpenAIテスト実行エラー:", err)
+      setOpenaiTestResult({
+        success: false,
+        error: `テスト実行中にエラーが発生しました: ${err.message}`,
+        details: { errorType: err.constructor.name },
+      })
+    } finally {
+      setIsTestingOpenAI(false)
     }
   }
 
@@ -420,6 +472,12 @@ export default function ArticleGeneratorPage() {
   // カスタムテキストを記事に挿入するヘルパー関数
   const insertCustomText = useCallback(
     (rawMarkdown: string): string => {
+      // undefinedまたはnullチェックを追加
+      if (!rawMarkdown || typeof rawMarkdown !== 'string') {
+        console.warn('insertCustomText: rawMarkdown is not a valid string:', rawMarkdown)
+        return rawMarkdown || ''
+      }
+
       let resultMarkdown = rawMarkdown
 
       // 1. 冒頭文の挿入
@@ -523,13 +581,21 @@ export default function ArticleGeneratorPage() {
       }
 
       const data = await response.json()
-      const rawGeneratedArticle = data.article // AIが生成した生のMarkdown
+      console.log("記事生成APIレスポンス:", data)
+      
+      // data.articleまたはdata.contentを確認
+      const rawGeneratedArticle = data.article || data.content || ""
+      
+      if (!rawGeneratedArticle || typeof rawGeneratedArticle !== 'string') {
+        console.error("記事データが無効です:", data)
+        throw new Error("記事の生成に失敗しました。レスポンスに有効な記事データがありません。")
+      }
 
       // カスタムテキストを挿入
       const articleWithCustomTexts = insertCustomText(rawGeneratedArticle)
 
       setArticle(articleWithCustomTexts) // 編集可能な記事として設定
-      setArticleTitle(data.title)
+      setArticleTitle(data.title || `${topic}について`)
       setActiveTab("article-preview-edit") // 記事生成後、プレビュー・編集タブに遷移
     } catch (err: any) {
       setError(err.message)
@@ -989,6 +1055,45 @@ export default function ArticleGeneratorPage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center p-4 md:p-8 lg:p-12 bg-gray-50">
+      {/* ナビゲーションヘッダー */}
+      <div className="w-full max-w-6xl mb-6">
+        <div className="flex justify-between items-center bg-white rounded-lg shadow-md p-4">
+          <h1 className="text-2xl font-bold text-gray-900">SEO記事生成システム</h1>
+          <div className="flex gap-3">
+            <Link href="/article-generator">
+              <Button variant="default" size="lg">
+                📝 新しい記事を生成
+              </Button>
+            </Link>
+            <Link href="/ad-management">
+              <Button variant="default" size="lg" className="bg-orange-600 hover:bg-orange-700">
+                🎯 広告管理
+              </Button>
+            </Link>
+            <Link href="/templates">
+              <Button variant="default" size="lg">
+                📋 テンプレート記事生成
+              </Button>
+            </Link>
+            <Link href="/quality-evaluation">
+              <Button variant="default" size="lg">
+                🔍 記事品質評価
+              </Button>
+            </Link>
+            <Link href="/quality-evaluation?tab=google-quality">
+              <Button variant="outline" size="lg">
+                🎯 Google品質評価
+              </Button>
+            </Link>
+            <Link href="/dashboard">
+              <Button variant="outline">
+                📊 ダッシュボード
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-3xl">
         <TabsList className="flex flex-wrap justify-center gap-2 mb-6">
           <TabsTrigger value="keyword-settings">キーワード設定</TabsTrigger>
@@ -1281,6 +1386,20 @@ export default function ArticleGeneratorPage() {
                   {error}
                 </div>
               )}
+
+              {/* Yahoo!急上昇ワード統合セクション */}
+              <div className="mt-8 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <h3 className="text-lg font-semibold mb-2">🚀 Yahoo!急上昇ワード</h3>
+                <p className="text-sm text-gray-700 mb-4">
+                  Yahoo! JAPANの急上昇ワードを参考に、今話題の記事を生成してみましょう。
+                </p>
+                <YahooTrendingSelector
+                  onSelect={(selectedWord) => {
+                    setTopic(selectedWord)
+                    setActiveTab("article-generation")
+                  }}
+                />
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -1382,21 +1501,6 @@ export default function ArticleGeneratorPage() {
                         value={postStatus}
                         onChange={(e) => setPostStatus(e.target.value as "publish" | "draft")}
                         className="w-full border rounded px-3 py-2"
-                        disabled={isPosting}
-                      >
-                        <option value="publish">公開する</option>
-                        <option value="draft">下書きに保存</option>
-                      </select>
-                      <p className="text-sm text-gray-500">投稿ステータスを選択してください。</p>
-                    </div>
-                  </div>
-
-                  <Button
-                    onClick={() => handlePostToWordPress(articleTitle, editedArticle, topic, generatedImageUrl)}
-                    className="w-full mt-4"
-                    disabled={isPosting || !editedArticle.trim()}
-                  >
-                    {isPosting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         WordPressに投稿中...
@@ -2127,6 +2231,75 @@ export default function ArticleGeneratorPage() {
                 )}
               </div>
 
+              {/* OpenAI接続テストセクション */}
+              <div className="space-y-4 p-4 bg-green-50 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">OpenAI API接続テスト</h3>
+                  <Button onClick={handleTestOpenAIConnection} variant="outline" size="sm" disabled={isTestingOpenAI}>
+                    {isTestingOpenAI ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        テスト中...
+                      </>
+                    ) : (
+                      "接続テスト"
+                    )}
+                  </Button>
+                </div>
+
+                {openaiTestResult && (
+                  <div
+                    className={`p-3 rounded-md ${
+                      openaiTestResult.success
+                        ? "bg-green-50 border border-green-200"
+                        : "bg-red-50 border border-red-200"
+                    }`}
+                  >
+                    <div className="flex items-center mb-2">
+                      {openaiTestResult.success ? (
+                        <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                      ) : (
+                        <XCircle className="h-5 w-5 text-red-600 mr-2" />
+                      )}
+                      <span className={`font-medium ${openaiTestResult.success ? "text-green-800" : "text-red-800"}`}>
+                        {openaiTestResult.success ? "接続成功" : "接続失敗"}
+                      </span>
+                    </div>
+
+                    {openaiTestResult.success && openaiTestResult.data && (
+                      <div className="text-sm text-green-700 space-y-1">
+                        <p>✅ モデル: {openaiTestResult.data.model}</p>
+                        <p>✅ APIキー: {openaiTestResult.data.keyInfo.prefix}... ({openaiTestResult.data.keyInfo.length}文字)</p>
+                        <div className="bg-green-100 p-2 rounded mt-2">
+                          <p className="font-medium">テスト応答:</p>
+                          <p className="text-green-800">{openaiTestResult.data.testResponse}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {!openaiTestResult.success && (
+                      <div className="text-sm text-red-700">
+                        <p className="font-medium">エラー: {openaiTestResult.error}</p>
+                        {openaiTestResult.guidance && (
+                          <div className="mt-2 text-xs bg-red-100 p-2 rounded">
+                            <p className="font-medium">解決のヒント:</p>
+                            <pre className="whitespace-pre-wrap">{openaiTestResult.guidance}</pre>
+                          </div>
+                        )}
+                        {openaiTestResult.details && (
+                          <div className="mt-2 text-xs">
+                            <p>詳細情報:</p>
+                            <pre className="bg-red-100 p-2 rounded text-xs overflow-auto">
+                              {JSON.stringify(openaiTestResult.details, null, 2)}
+                            </pre>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="openai-key">OpenAI APIキー</Label>
                 <Textarea id="openai-key" placeholder="sk-..." rows={1} />
@@ -2262,6 +2435,94 @@ export default function ArticleGeneratorPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Google品質評価機能の紹介 */}
+      <div className="mt-12 w-full max-w-4xl">
+        <Card className="border-2 border-red-200 bg-gradient-to-r from-red-50 to-pink-50">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold text-red-800 flex items-center justify-center gap-2">
+              🎯 Google品質ガイドライン評価
+            </CardTitle>
+            <p className="text-red-700">
+              Googleに嫌われない記事を書くための品質チェック機能
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="font-semibold text-lg mb-3 text-red-800">📊 8つのチェック項目</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                    <span className="text-sm">オリジナリティ（テンプレ感の回避）</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                    <span className="text-sm">ユーザーへの有益性（検索意図との適合）</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                    <span className="text-sm">剽窃・再構成の有無</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                    <span className="text-sm">キーワード詰め込みの回避</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                    <span className="text-sm">出典・根拠の提示</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                    <span className="text-sm">E-E-A-T（経験・専門性・権威性・信頼性）</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                    <span className="text-sm">コンテンツの厚み</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                    <span className="text-sm">自動投稿傾向の回避</span>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-3 text-red-800">✅ 3段階判定システム</h3>
+                <div className="space-y-3">
+                  <div className="p-3 bg-green-100 rounded-lg border border-green-200">
+                    <div className="flex items-center gap-2 mb-1">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span className="font-semibold text-green-800">OK</span>
+                    </div>
+                    <p className="text-sm text-green-700">品質基準をクリア</p>
+                  </div>
+                  <div className="p-3 bg-yellow-100 rounded-lg border border-yellow-200">
+                    <div className="flex items-center gap-2 mb-1">
+                      <XCircle className="w-4 h-4 text-yellow-600" />
+                      <span className="font-semibold text-yellow-800">要改善</span>
+                    </div>
+                    <p className="text-sm text-yellow-700">改善の余地あり</p>
+                  </div>
+                  <div className="p-3 bg-red-100 rounded-lg border border-red-200">
+                    <div className="flex items-center gap-2 mb-1">
+                      <XCircle className="w-4 h-4 text-red-600" />
+                      <span className="font-semibold text-red-800">NG</span>
+                    </div>
+                    <p className="text-sm text-red-700">重大な問題あり</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="text-center pt-4">
+              <Link href="/quality-evaluation?tab=google-quality">
+                <Button size="lg" className="bg-red-600 hover:bg-red-700 text-white">
+                  🎯 Google品質評価を始める
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </main>
   )
 }
