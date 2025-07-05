@@ -1,8 +1,9 @@
 # 🚀 クイックスタートガイド
 
-## 作業再開時の3分チェックリスト
+## 作業再開時の 3 分チェックリスト
 
-### 1. 環境起動（30秒）
+### 1. 環境起動（30 秒）
+
 ```bash
 cd /home/iwasaki/work/make-seo
 # Laravel起動
@@ -11,16 +12,18 @@ cd backend && ./vendor/bin/sail up -d
 cd ../frontend && npm run dev
 ```
 
-### 2. 動作確認（30秒）
+### 2. 動作確認（30 秒）
+
 ```bash
 # Laravel API確認
 curl http://localhost:80/api/v1/health
 
-# Next.js確認  
+# Next.js確認
 curl http://localhost:3000
 ```
 
-### 3. 作業状況確認（30秒）
+### 3. 作業状況確認（30 秒）
+
 ```bash
 # Git状況確認
 git status
@@ -30,7 +33,8 @@ git log --oneline -5
 cat WORK_LOG.md
 ```
 
-### 4. 作業開始（30秒）
+### 4. 作業開始（30 秒）
+
 ```bash
 # 作業ブランチ作成
 git checkout -b feature/next-task
@@ -41,9 +45,10 @@ echo "$(date): 作業開始 - [作業内容]" >> WORK_LOG.md
 
 ---
 
-## 作業終了時の3分チェックリスト
+## 作業終了時の 3 分チェックリスト
 
-### 1. 変更保存（1分）
+### 1. 変更保存（1 分）
+
 ```bash
 # 変更確認
 git status
@@ -57,12 +62,14 @@ git commit -m "feat: [作業内容]" \
            -m "- 変更内容2"
 ```
 
-### 2. プッシュ（30秒）
+### 2. プッシュ（30 秒）
+
 ```bash
 git push origin feature/your-branch
 ```
 
-### 3. 環境停止（30秒）
+### 3. 環境停止（30 秒）
+
 ```bash
 # Laravel停止
 cd backend && ./vendor/bin/sail down
@@ -70,7 +77,8 @@ cd backend && ./vendor/bin/sail down
 # Next.js停止（Ctrl+C）
 ```
 
-### 4. 作業ログ更新（1分）
+### 4. 作業ログ更新（1 分）
+
 ```bash
 # 作業完了ログ
 echo "$(date): 作業完了 - [作業内容]" >> WORK_LOG.md
@@ -84,6 +92,7 @@ echo "$(date): 作業完了 - [作業内容]" >> WORK_LOG.md
 ## 🔧 よく使うコマンド
 
 ### Laravel
+
 ```bash
 # マイグレーション
 ./vendor/bin/sail artisan migrate
@@ -96,6 +105,7 @@ echo "$(date): 作業完了 - [作業内容]" >> WORK_LOG.md
 ```
 
 ### Next.js
+
 ```bash
 # コンポーネント追加
 npx shadcn@latest add button
@@ -108,6 +118,7 @@ npm run type-check
 ```
 
 ### Git
+
 ```bash
 # ブランチ作成
 git checkout -b feature/new-feature
@@ -123,18 +134,19 @@ git log --oneline -5
 
 ## 📱 アクセス先
 
-| サービス | URL |
-|---------|-----|
-| Laravel API | http://localhost:80 |
-| Next.js | http://localhost:3000 |
-| Telescope | http://localhost:80/telescope |
-| API Docs | http://localhost:80/api/documentation |
+| サービス    | URL                                   |
+| ----------- | ------------------------------------- |
+| Laravel API | http://localhost:80                   |
+| Next.js     | http://localhost:3000                 |
+| Telescope   | http://localhost:80/telescope         |
+| API Docs    | http://localhost:80/api/documentation |
 
 ---
 
 ## 🚨 トラブルシューティング
 
-### Docker起動できない
+### Docker 起動できない
+
 ```bash
 # コンテナ状況確認
 docker ps -a
@@ -144,6 +156,7 @@ cd backend && ./vendor/bin/sail down && ./vendor/bin/sail up -d
 ```
 
 ### 依存関係エラー
+
 ```bash
 # Laravel
 cd backend && composer install
@@ -153,6 +166,7 @@ cd frontend && npm install
 ```
 
 ### データベース接続エラー
+
 ```bash
 # マイグレーション確認
 ./vendor/bin/sail artisan migrate:status
@@ -163,4 +177,4 @@ cd frontend && npm install
 
 ---
 
-**最終更新**: 2025年7月5日
+**最終更新**: 2025 年 7 月 5 日
