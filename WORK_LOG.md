@@ -51,10 +51,10 @@
 
 ### リポジトリ情報
 
-- **リポジトリURL**: https://github.com/kai-tecweb/seo-article-generator.git
+- **リポジトリ URL**: https://github.com/kai-tecweb/seo-article-generator.git
 - **リポジトリ名**: seo-article-generator
 - **メインブランチ**: main
-- **最新コミット**: cf1f048 - AI記事生成機能と管理画面の完全実装
+- **最新コミット**: cf1f048 - AI 記事生成機能と管理画面の完全実装
 
 ### 現在の実装状況
 
